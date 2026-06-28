@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Elo Rankings</title>
+  <style>
+    table { border-collapse: collapse; margin: 2rem auto; }
+    th, td { border: 1px solid #ccc; padding: 8px 14px; }
+    th { background: #222; color: #fff; }
+    tr:nth-child(even) { background: #f5f5f5; }
+  </style>
+</head>
+<body>
+  <h1 style="text-align:center">Elo Rankings</h1>
+  <table id="board"><thead></thead><tbody></tbody></table>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+  <script>
+    const SHEET_ID = "1tXO6Ov2SjiXGRHy6Whbsn1dmx5UfyTUarHizByfpVd8";
+    const SHEET_NAME = "Sheet1";
+    const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${SHEET_NAME}`;
+
+    Papa.parse(url, {
+      download: true,
+      header: true,
+      complete: ({ data, meta }) => {
+        const cols = meta.fields;
+        document.querySelector("#board thead").innerHTML =
+          "<tr>" + cols.map(c => `<th>${c}</th>`).join("") + "</tr>";
+        document.querySelector("#board tbody").innerHTML =
+          data.map(row =>
+            "<tr>" + cols.map(c => `<td>${row[c] ?? ""}</td>`).join("") + "</tr>"
+          ).join("");
+      }
+    });
+  </script>
+</body>
+</html>
