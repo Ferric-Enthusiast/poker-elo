@@ -1,38 +1,64 @@
+</html>
+
 <!DOCTYPE html>
 <html>
 <head>
   <meta charset="utf-8">
-  <title>Elo Rankings</title>
+  <title>Lucky Sharks Elo Rankings</title>
   <style>
-    table { border-collapse: collapse; margin: 2rem auto; }
-    th, td { border: 1px solid #ccc; padding: 8px 14px; }
+    body { font-family: system-ui, sans-serif; max-width: 800px; margin: 0 auto; padding: 2rem; }
+    h1 { text-align: center; }
+    .tabs { display: flex; gap: .5rem; justify-content: center; margin-bottom: 1.5rem; }
+    .tabs button {
+      padding: .6rem 1.2rem; border: 1px solid #ccc; background: #f5f5f5;
+      cursor: pointer; border-radius: 6px; font-size: 1rem;
+    }
+    .tabs button.active { background: #222; color: #fff; border-color: #222; }
+    table { border-collapse: collapse; margin: 0 auto; width: 100%; }
+    th, td { border: 1px solid #ccc; padding: 8px 14px; text-align: left; }
     th { background: #222; color: #fff; }
     tr:nth-child(even) { background: #f5f5f5; }
   </style>
 </head>
 <body>
-  <h1 style="text-align:center">Elo Rankings</h1>
+  <h1>Elo Rankings</h1>
+  <div class="tabs">
+    <button data-tab="Current Rankings" class="active">Current Rankings</button>
+    <button data-tab="All-Time Rankings">All-Time Rankings</button>
+  </div>
   <table id="board"><thead></thead><tbody></tbody></table>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
   <script>
     const SHEET_ID = "1tXO6Ov2SjiXGRHy6Whbsn1dmx5UfyTUarHizByfpVd8";
-    const SHEET_NAME = "Sheet1";
-    const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${SHEET_NAME}`;
+    const cache = {};
 
-    Papa.parse(url, {
-      download: true,
-      header: true,
-      complete: ({ data, meta }) => {
-        const cols = meta.fields;
-        document.querySelector("#board thead").innerHTML =
-          "<tr>" + cols.map(c => `<th>${c}</th>`).join("") + "</tr>";
-        document.querySelector("#board tbody").innerHTML =
-          data.map(row =>
-            "<tr>" + cols.map(c => `<td>${row[c] ?? ""}</td>`).join("") + "</tr>"
-          ).join("");
-      }
+    function render(tab) {
+      const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(tab)}`;
+      Papa.parse(url, {
+        download: true,
+        header: true,
+        complete: ({ data, meta }) => {
+          const cols = meta.fields;
+          document.querySelector("#board thead").innerHTML =
+            "<tr>" + cols.map(c => `<th>${c}</th>`).join("") + "</tr>";
+          document.querySelector("#board tbody").innerHTML =
+            data.map(row =>
+              "<tr>" + cols.map(c => `<td>${row[c] ?? ""}</td>`).join("") + "</tr>"
+            ).join("");
+        }
+      });
+    }
+
+    document.querySelectorAll(".tabs button").forEach(btn => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".tabs button").forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        render(btn.dataset.tab);
+      });
     });
+
+    render("Current Rankings");  // default tab on load
   </script>
 </body>
 </html>
