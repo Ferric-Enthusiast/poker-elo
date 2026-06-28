@@ -18,6 +18,10 @@
     th, td { border: 1px solid #ccc; padding: 8px 14px; text-align: left; }
     th { background: #222; color: #fff; }
     tr:nth-child(even) { background: #f5f5f5; }
+    td.move-zero     { background: #d9d9d9 !important; }
+    td.move-up       { background: #b6e6b6 !important; }
+    td.move-down     { background: #f0b0b0 !important; }
+    td.move-inactive { background: #f5edae !important; }
   </style>
 </head>
 <body>
@@ -44,7 +48,22 @@
             "<tr>" + cols.map(c => `<th>${c}</th>`).join("") + "</tr>";
           document.querySelector("#board tbody").innerHTML =
             data.map(row =>
-              "<tr>" + cols.map(c => `<td>${row[c] ?? ""}</td>`).join("") + "</tr>"
+              "<tr>" + cols.map(c => {
+                const val = row[c] ?? "";
+                let cls = "";
+                if (/rank movement/i.test(c)) {
+                  const trimmed = String(val).trim();
+                  if (/inactive/i.test(trimmed)) {
+                    cls = "move-inactive";
+                  } else {
+                    const num = parseFloat(trimmed.replace(/[^0-9.+-]/g, ""));
+                    if (!isNaN(num)) {
+                      cls = num > 0 ? "move-up" : num < 0 ? "move-down" : "move-zero";
+                    }
+                  }
+                }
+                return `<td${cls ? ` class="${cls}"` : ""}>${val}</td>`;
+              }).join("") + "</tr>"
             ).join("");
         }
       });
